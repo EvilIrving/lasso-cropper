@@ -1,17 +1,17 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url>
-    <loc>./</loc>
+    <loc>https://lasso.onecat.dev/</loc>
     <changefreq>weekly</changefreq>
     <priority>1.0</priority>
   </url>
   <url>
-    <loc>./privacy.html</loc>
+    <loc>https://lasso.onecat.dev/privacy</loc>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
   <url>
-    <loc>./support.html</loc>
+    <loc>https://lasso.onecat.dev/support</loc>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>

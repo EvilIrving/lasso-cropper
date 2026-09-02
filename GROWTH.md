@@ -17,9 +17,9 @@
 - **Updates:** 手动 / 商店更新（商店通道就绪后）
 - **Bundle ID:** `dev.onecat.lasso-export`
 - **Repo:** https://github.com/EvilIrving/lasso-cropper
-- **Site:** Cloudflare 静态页源码在仓库 `website/`（`index` / `privacy` / `support`）；绑定域名后回填本字段、GitHub homepage，并把 sitemap/OG 改成绝对 URL
-- **Support URL:** `website/support.html`（上线后用于 App Store Connect）
-- **Privacy URL:** `website/privacy.html`（上线后用于 App Store Connect）
+- **Site:** https://lasso.onecat.dev/（Cloudflare Pages `lasso-export`；源码在仓库 `website/`）
+- **Support URL:** https://lasso.onecat.dev/support（App Store Connect）
+- **Privacy URL:** https://lasso.onecat.dev/privacy（App Store Connect）
 - **AEO:** 三页均含自洽首句、可见 FAQ 与 JSON-LD（`SoftwareApplication` / `FAQPage` / `WebPage`）
 - **Version:** 1.2 (3)
 
