@@ -16,7 +16,7 @@
     <string>套索导出</string>
     <key>CFBundlePackageType</key>
     <string>APPL</string>
-    <key>CFBundleIconFile</key>
+    <key>CFBundleIconName</key>
     <string>AppIcon</string>
     <key>CFBundleShortVersionString</key>
     <string>1.2</string>
@@ -29,6 +29,10 @@
     <key>NSHighResolutionCapable</key>
     <true/>
     <key>NSSupportsAutomaticTermination</key>
+    <false/>
+    <key>NSHumanReadableCopyright</key>
+    <string>Copyright © 2026 董少年. All rights reserved.</string>
+    <key>ITSAppUsesNonExemptEncryption</key>
     <false/>
     <key>CFBundleDocumentTypes</key>
     <array>

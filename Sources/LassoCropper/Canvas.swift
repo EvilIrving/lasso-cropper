@@ -1,4 +1,5 @@
 import AppKit
+import UniformTypeIdentifiers
 
 struct OverlayCut {
     var points: [CGPoint]
@@ -293,7 +294,11 @@ final class LassoCanvasView: NSView {
             forClasses: [NSURL.self],
             options: [.urlReadingFileURLsOnly: true]
         ) as? [URL] else { return nil }
-        return items.first(where: { NSImage(contentsOf: $0) != nil })
+        let allowed: Set<UTType> = [.png, .jpeg, .tiff, .heic, .webP]
+        return items.first { url in
+            guard let type = UTType(filenameExtension: url.pathExtension) else { return false }
+            return allowed.contains(where: { type.conforms(to: $0) })
+        }
     }
 }
 

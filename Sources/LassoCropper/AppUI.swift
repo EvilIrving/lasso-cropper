@@ -27,6 +27,7 @@ final class LassoViewController: NSViewController, NSPathControlDelegate {
     private var sourceURL: URL?
     private var sourceImage: CGImage?
     private var destination: URL?
+    private var destinationAccessing = false
     private var slots: [Slot] = []
     private var selectedIndex = 0
     private var undoStack: [(slots: [Slot], selected: Int)] = []
@@ -67,6 +68,7 @@ final class LassoViewController: NSViewController, NSPathControlDelegate {
             NSEvent.removeMonitor(spaceMonitor)
             self.spaceMonitor = nil
         }
+        releaseDestinationAccess()
     }
 
     override func viewDidAppear() {
@@ -349,7 +351,7 @@ final class LassoViewController: NSViewController, NSPathControlDelegate {
             } else {
                 slots.removeAll()
                 selectedIndex = 0
-                destination = JobFactory.defaultDestination(for: url)
+                adoptDestination(Defaults.lastDestination ?? JobFactory.defaultDestination(for: url), persistBookmark: false)
             }
             refreshAll()
             DispatchQueue.main.async { [weak self] in self?.fitImage(nil) }
@@ -368,18 +370,17 @@ final class LassoViewController: NSViewController, NSPathControlDelegate {
         panel.canChooseDirectories = true
         panel.canCreateDirectories = true
         panel.prompt = "用作导出文件夹"
+        panel.message = "选择后会记住此文件夹，下次无需重新授权"
         panel.directoryURL = destination
         guard panel.runModal() == .OK, let url = panel.url else { return }
-        destination = url
-        Defaults.lastDestination = url
+        adoptDestination(url, persistBookmark: true)
         refreshChrome()
         persistSoon()
     }
 
     @objc private func destinationChanged(_ sender: Any?) {
         if let url = destinationControl.url {
-            destination = url
-            Defaults.lastDestination = url
+            adoptDestination(url, persistBookmark: true)
             persistSoon()
         }
     }
@@ -493,7 +494,19 @@ final class LassoViewController: NSViewController, NSPathControlDelegate {
             chooseFolder(nil)
         }
         guard let destination, let sourceImage else { throw LassoError.noDestination }
+        ensureDestinationAccess()
+        if !canWrite(to: destination) {
+            chooseFolder(nil)
+            guard let destination = self.destination, canWrite(to: destination) else {
+                throw LassoError.noDestination
+            }
+            try writeExports(filled: filled, sourceImage: sourceImage, destination: destination)
+            return
+        }
+        try writeExports(filled: filled, sourceImage: sourceImage, destination: destination)
+    }
 
+    private func writeExports(filled: [Slot], sourceImage: CGImage, destination: URL) throws {
         let existing = filled.compactMap { slot -> String? in
             let url = destination.appendingPathComponent(slot.spec.folder).appendingPathComponent(slot.spec.fileName)
             return FileManager.default.fileExists(atPath: url.path) ? slot.spec.id : nil
@@ -507,18 +520,20 @@ final class LassoViewController: NSViewController, NSPathControlDelegate {
             if alert.runModal() != .alertFirstButtonReturn { return }
         }
 
-        for slot in filled {
-            guard let cut = slot.cut else { continue }
-            let image = try LassoExport.render(
-                source: sourceImage,
-                cut: cut,
-                canvasSize: canvasSize,
-                marginPercent: marginPercent
-            )
-            let url = destination.appendingPathComponent(slot.spec.folder).appendingPathComponent(slot.spec.fileName)
-            try LassoExport.write(image, to: url)
+        try SecurityScoped.access(destination) { scopedDestination in
+            for slot in filled {
+                guard let cut = slot.cut else { continue }
+                let image = try LassoExport.render(
+                    source: sourceImage,
+                    cut: cut,
+                    canvasSize: canvasSize,
+                    marginPercent: marginPercent
+                )
+                let url = scopedDestination.appendingPathComponent(slot.spec.folder).appendingPathComponent(slot.spec.fileName)
+                try LassoExport.write(image, to: url)
+            }
+            NSWorkspace.shared.open(scopedDestination)
         }
-        NSWorkspace.shared.open(destination)
         statusLabel.stringValue = "已导出 \(filled.count) 张"
     }
 
@@ -528,11 +543,12 @@ final class LassoViewController: NSViewController, NSPathControlDelegate {
         marginSlider.doubleValue = marginPercent
         marginValue.stringValue = "\(Int(marginPercent))%"
         canvasPopup.selectItem(withTitle: "\(canvasSize) × \(canvasSize)")
-        if let sourceURL {
-            destination = JobFactory.defaultDestination(for: sourceURL)
-        }
-        if let path = session.destination, path.hasSuffix("-导出") {
-            destination = URL(fileURLWithPath: path)
+        if let remembered = Defaults.lastDestination {
+            adoptDestination(remembered, persistBookmark: false)
+        } else if let sourceURL {
+            adoptDestination(JobFactory.defaultDestination(for: sourceURL), persistBookmark: false)
+        } else if let path = session.destination {
+            adoptDestination(URL(fileURLWithPath: path, isDirectory: true), persistBookmark: false)
         }
         slots = session.cuts.enumerated().map { index, item in
             Slot(
@@ -543,6 +559,43 @@ final class LassoViewController: NSViewController, NSPathControlDelegate {
         }
         selectedIndex = min(max(0, session.selectedIndex), max(0, slots.count - 1))
         rebuildPreviews()
+    }
+
+    private func adoptDestination(_ url: URL, persistBookmark: Bool) {
+        releaseDestinationAccess()
+        destination = url
+        if persistBookmark {
+            Defaults.lastDestination = url
+        }
+        ensureDestinationAccess()
+        try? FileManager.default.createDirectory(at: url, withIntermediateDirectories: true)
+    }
+
+    private func ensureDestinationAccess() {
+        guard let destination, !destinationAccessing else { return }
+        destinationAccessing = destination.startAccessingSecurityScopedResource()
+    }
+
+    private func releaseDestinationAccess() {
+        guard destinationAccessing, let destination else {
+            destinationAccessing = false
+            return
+        }
+        destination.stopAccessingSecurityScopedResource()
+        destinationAccessing = false
+    }
+
+    private func canWrite(to url: URL) -> Bool {
+        let fm = FileManager.default
+        do {
+            try fm.createDirectory(at: url, withIntermediateDirectories: true)
+            let probe = url.appendingPathComponent(".lasso-write-test")
+            try Data().write(to: probe, options: .atomic)
+            try? fm.removeItem(at: probe)
+            return true
+        } catch {
+            return false
+        }
     }
 
     private func persistSoon() {

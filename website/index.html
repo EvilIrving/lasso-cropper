@@ -1,0 +1,418 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>套索导出 — macOS 圈选批量导出透明 PNG</title>
+  <meta name="description" content="原生 macOS 套索工具：沿轮廓画圈，批量导出 1:1 透明 PNG。本地处理，无账号无遥测。GitHub 与 Mac App Store 均为免费。">
+  <meta name="theme-color" content="#161410">
+  <link rel="canonical" href="https://github.com/EvilIrving/lasso-cropper">
+  <link rel="icon" href="assets/icon.png" type="image/png">
+
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="套索导出">
+  <meta property="og:title" content="套索导出 — 圈一圈，导出 1:1 透明 PNG">
+  <meta property="og:description" content="原生 macOS 套索圈选工具。本地处理，免费开源。">
+  <meta property="og:image" content="assets/og.png">
+  <meta property="og:locale" content="zh_CN">
+
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="套索导出">
+  <meta name="twitter:description" content="macOS 套索圈选，批量导出 1:1 透明 PNG。本地、免费。">
+  <meta name="twitter:image" content="assets/og.png">
+
+  <style>
+    :root {
+      --lacquer: #161410;
+      --lacquer-deep: #0b0a08;
+      --raised: #201d19;
+      --champagne: #edece8;
+      --muted: #b3aea3;
+      --faint: #857f75;
+      --gold: #ecb846;
+      --gold-rich: #c7942e;
+      --gold-line: rgba(199, 148, 46, 0.55);
+      --hairline: rgba(255, 255, 255, 0.10);
+      --sans: -apple-system, BlinkMacSystemFont, "SF Pro Text", "PingFang SC", "Helvetica Neue", sans-serif;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html { -webkit-text-size-adjust: 100%; scroll-behavior: smooth; }
+    body {
+      background: var(--lacquer-deep);
+      color: var(--champagne);
+      font-family: var(--sans);
+      font-size: 16px;
+      line-height: 1.65;
+      -webkit-font-smoothing: antialiased;
+    }
+    a { color: var(--gold); text-decoration: none; }
+    a:hover { text-decoration: underline; text-underline-offset: 3px; }
+
+    .wrap {
+      max-width: 880px;
+      margin: 0 auto;
+      padding: clamp(2rem, 6vw, 4.5rem) clamp(1.25rem, 4vw, 2rem) 4rem;
+    }
+
+    header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 1rem;
+      margin-bottom: clamp(2.5rem, 6vw, 4rem);
+    }
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      color: var(--champagne);
+      text-decoration: none;
+      font-weight: 600;
+      letter-spacing: 0.02em;
+    }
+    .brand img { width: 36px; height: 36px; }
+    .nav { display: flex; gap: 1.25rem; font-size: 0.92rem; color: var(--muted); }
+    .nav a { color: var(--muted); }
+    .nav a:hover { color: var(--champagne); }
+
+    .hero {
+      display: grid;
+      gap: 1.75rem;
+      padding-bottom: 2.5rem;
+      border-bottom: 1px solid var(--hairline);
+      margin-bottom: 2.5rem;
+    }
+    .eyebrow {
+      font-size: 0.72rem;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: var(--faint);
+      font-weight: 600;
+    }
+    h1 {
+      font-size: clamp(2.2rem, 5vw, 3.2rem);
+      line-height: 1.15;
+      font-weight: 650;
+      letter-spacing: -0.02em;
+      max-width: 14ch;
+    }
+    .lead {
+      font-size: 1.125rem;
+      color: var(--muted);
+      max-width: 36em;
+    }
+    .actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.75rem;
+      margin-top: 0.25rem;
+    }
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 44px;
+      padding: 0 1.15rem;
+      border-radius: 2px;
+      font-size: 0.95rem;
+      font-weight: 600;
+      text-decoration: none;
+      border: 1px solid transparent;
+    }
+    .btn:hover { text-decoration: none; }
+    .btn-gold {
+      background: var(--gold);
+      color: #1f1708;
+    }
+    .btn-gold:hover { background: #f0c45a; }
+    .btn-ghost {
+      background: transparent;
+      color: var(--champagne);
+      border-color: var(--gold-line);
+    }
+    .btn-ghost:hover { border-color: var(--gold); color: var(--gold); }
+
+    .hero-visual {
+      margin-top: 0.5rem;
+      background: var(--lacquer);
+      border: 1px solid var(--hairline);
+      border-radius: 4px;
+      padding: clamp(1.5rem, 4vw, 2.5rem);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 220px;
+    }
+    .hero-visual img {
+      width: min(220px, 50vw);
+      height: auto;
+      filter: drop-shadow(0 18px 40px rgba(0,0,0,0.45));
+    }
+
+    section { margin-bottom: 2.75rem; }
+    h2 {
+      font-size: 1.25rem;
+      font-weight: 650;
+      margin-bottom: 1rem;
+      letter-spacing: 0.01em;
+    }
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 0.85rem;
+    }
+    .card {
+      background: var(--raised);
+      border: 1px solid var(--hairline);
+      border-radius: 3px;
+      padding: 1.1rem 1.15rem;
+    }
+    .card h3 {
+      font-size: 0.98rem;
+      font-weight: 600;
+      color: var(--gold);
+      margin-bottom: 0.35rem;
+    }
+    .card p { color: var(--muted); font-size: 0.92rem; }
+
+    .steps {
+      list-style: none;
+      counter-reset: step;
+      display: grid;
+      gap: 0.75rem;
+    }
+    .steps li {
+      counter-increment: step;
+      background: var(--lacquer);
+      border: 1px solid var(--hairline);
+      border-radius: 3px;
+      padding: 0.95rem 1.1rem 0.95rem 3.2rem;
+      position: relative;
+      color: var(--muted);
+    }
+    .steps li::before {
+      content: counter(step, decimal-leading-zero);
+      position: absolute;
+      left: 1rem;
+      top: 0.95rem;
+      font-size: 0.75rem;
+      letter-spacing: 0.08em;
+      color: var(--gold-rich);
+      font-weight: 700;
+    }
+    .steps strong { color: var(--champagne); font-weight: 600; }
+
+    pre {
+      background: var(--lacquer);
+      border: 1px solid var(--hairline);
+      border-radius: 3px;
+      padding: 1rem 1.1rem;
+      overflow-x: auto;
+      font-size: 0.86rem;
+      color: var(--champagne);
+      line-height: 1.55;
+    }
+    code { font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace; }
+
+    .faq details {
+      border-top: 1px solid var(--hairline);
+      padding: 0.9rem 0;
+    }
+    .faq details:last-child { border-bottom: 1px solid var(--hairline); }
+    .faq summary {
+      cursor: pointer;
+      font-weight: 600;
+      color: var(--champagne);
+      list-style: none;
+    }
+    .faq summary::-webkit-details-marker { display: none; }
+    .faq details p {
+      margin-top: 0.55rem;
+      color: var(--muted);
+      font-size: 0.95rem;
+    }
+
+    footer {
+      margin-top: 3rem;
+      padding-top: 1.5rem;
+      border-top: 1px solid var(--hairline);
+      color: var(--faint);
+      font-size: 0.88rem;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.75rem 1.5rem;
+      justify-content: space-between;
+    }
+
+    @media (max-width: 560px) {
+      .nav { display: none; }
+      h1 { max-width: none; }
+    }
+  </style>
+
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "SoftwareApplication",
+    "name": "套索导出",
+    "alternateName": "Lasso Cropper",
+    "operatingSystem": "macOS 13+",
+    "applicationCategory": "DesignApplication",
+    "offers": {
+      "@type": "Offer",
+      "price": "0",
+      "priceCurrency": "CNY"
+    },
+    "softwareVersion": "1.1",
+    "url": "https://github.com/EvilIrving/lasso-cropper",
+    "downloadUrl": "https://github.com/EvilIrving/lasso-cropper/releases",
+    "description": "原生 macOS 套索圈选工具，批量导出 1:1 透明 PNG。本地处理，免费。"
+  }
+  </script>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    "mainEntity": [
+      {
+        "@type": "Question",
+        "name": "套索导出收费吗？",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "不收费。GitHub 完整版免费下载；Mac App Store 也计划免费上架。"
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "会上传我的图片吗？",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "不会。图片只在本地读写，应用不发起网络请求，也不收集使用数据。"
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "系统要求是什么？",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "需要 macOS 13 或更高版本。"
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "和 Photoshop 有什么不同？",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "只做一件事：徒手套索圈选并批量导出正方形透明 PNG。没有订阅，启动更快。"
+        }
+      }
+    ]
+  }
+  </script>
+</head>
+<body>
+  <div class="wrap">
+    <header>
+      <a class="brand" href="./">
+        <img src="assets/icon.png" width="36" height="36" alt="">
+        套索导出
+      </a>
+      <nav class="nav" aria-label="主导航">
+        <a href="#features">功能</a>
+        <a href="#install">安装</a>
+        <a href="#faq">常见问题</a>
+        <a href="https://github.com/EvilIrving/lasso-cropper">GitHub</a>
+      </nav>
+    </header>
+
+    <section class="hero">
+      <p class="eyebrow">macOS · 本地 · 免费</p>
+      <h1>圈一圈，导出 1:1 透明 PNG</h1>
+      <p class="lead">
+        套索导出是原生 macOS 工具：打开任意图片，沿轮廓徒手画圈，把每个圈选裁成正方形透明 PNG 并批量导出。
+        无账号、无遥测、素材不出机。
+      </p>
+      <div class="actions">
+        <a class="btn btn-gold" href="https://github.com/EvilIrving/lasso-cropper/releases">下载完整版</a>
+        <a class="btn btn-ghost" href="https://github.com/EvilIrving/lasso-cropper">查看源码</a>
+      </div>
+      <div class="hero-visual" aria-hidden="true">
+        <img src="assets/icon.png" width="220" height="220" alt="套索导出应用图标：金色套索与裁切框">
+      </div>
+    </section>
+
+    <section id="features">
+      <h2>功能</h2>
+      <div class="grid">
+        <article class="card">
+          <h3>即圈即收</h3>
+          <p>画完一圈自动收下，可连续圈多个区域，最后一次导出全部。</p>
+        </article>
+        <article class="card">
+          <h3>固定方图画布</h3>
+          <p>导出边长可选 256 / 512 / 1024，边距可调，适合素材切片与表情包。</p>
+        </article>
+        <article class="card">
+          <h3>顺手的画布操作</h3>
+          <p>滚轮缩放、触控板平移、空格拖动，撤销重做齐全。</p>
+        </article>
+        <article class="card">
+          <h3>本地与隐私</h3>
+          <p>AppKit 原生，无网络请求。默认写到应用导出目录，也可授权任意文件夹并记住。</p>
+        </article>
+      </div>
+    </section>
+
+    <section>
+      <h2>怎么用</h2>
+      <ol class="steps">
+        <li><strong>打开或拖入</strong> PNG、JPEG、HEIC、TIFF、WebP</li>
+        <li><strong>沿轮廓画圈</strong>，每圈一张；可继续圈选</li>
+        <li><strong>选好画布边长</strong>，点导出，一次写出全部透明 PNG</li>
+      </ol>
+    </section>
+
+    <section id="install">
+      <h2>安装</h2>
+      <p style="color:var(--muted);margin-bottom:0.85rem;">
+        GitHub 提供完整版免费下载与源码。Mac App Store 计划免费上架。
+      </p>
+      <pre><code>git clone https://github.com/EvilIrving/lasso-cropper.git
+cd lasso-cropper
+./build.sh
+open LassoCropper.app</code></pre>
+      <p style="color:var(--faint);font-size:0.88rem;margin-top:0.75rem;">需要 macOS 13+ 与 Swift 6。</p>
+    </section>
+
+    <section id="faq" class="faq">
+      <h2>常见问题</h2>
+      <details>
+        <summary>收费吗？</summary>
+        <p>不收费。GitHub 完整版免费；Mac App Store 也计划免费上架。</p>
+      </details>
+      <details>
+        <summary>会上传图片吗？</summary>
+        <p>不会。读写都在本地，应用不发起网络请求，也不收集使用数据。</p>
+      </details>
+      <details>
+        <summary>系统要求？</summary>
+        <p>macOS 13 或更高。</p>
+      </details>
+      <details>
+        <summary>和 Photoshop 比呢？</summary>
+        <p>只做套索圈选与批量方图导出。没有订阅，启动更快，适合重复切素材。</p>
+      </details>
+    </section>
+
+    <footer>
+      <span>套索导出 · Lasso Cropper · v1.1</span>
+      <span>
+        <a href="https://github.com/EvilIrving/lasso-cropper">GitHub</a>
+        ·
+        <a href="https://github.com/EvilIrving/lasso-cropper/releases">Releases</a>
+      </span>
+    </footer>
+  </div>
+</body>
+</html>

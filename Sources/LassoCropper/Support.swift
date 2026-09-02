@@ -83,28 +83,104 @@ struct Slot {
     var preview: NSImage?
 }
 
+enum AppPaths {
+    static var supportRoot: URL {
+        let root = FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask).first
+            ?? URL(fileURLWithPath: NSTemporaryDirectory())
+        return root.appendingPathComponent("LassoCropper", isDirectory: true)
+    }
+
+    static var exportsRoot: URL {
+        supportRoot.appendingPathComponent("Exports", isDirectory: true)
+    }
+
+    static var sessionsRoot: URL {
+        supportRoot.appendingPathComponent("sessions", isDirectory: true)
+    }
+}
+
 enum JobFactory {
     static func defaultDestination(for source: URL) -> URL {
         let name = source.deletingPathExtension().lastPathComponent + "-导出"
-        return source.deletingLastPathComponent().appendingPathComponent(name, isDirectory: true)
+        return AppPaths.exportsRoot.appendingPathComponent(name, isDirectory: true)
+    }
+}
+
+enum SecurityScoped {
+    @discardableResult
+    static func access<T>(_ url: URL, _ body: (URL) throws -> T) rethrows -> T {
+        let started = url.startAccessingSecurityScopedResource()
+        defer {
+            if started { url.stopAccessingSecurityScopedResource() }
+        }
+        return try body(url)
+    }
+}
+
+enum BookmarkStore {
+    private static let destinationBookmarkKey = "lastDestinationBookmark"
+
+    static func saveDestination(_ url: URL) {
+        do {
+            let data = try url.bookmarkData(
+                options: .withSecurityScope,
+                includingResourceValuesForKeys: nil,
+                relativeTo: nil
+            )
+            UserDefaults.standard.set(data, forKey: destinationBookmarkKey)
+            UserDefaults.standard.set(url.path, forKey: Defaults.destinationKey)
+        } catch {
+            UserDefaults.standard.set(url.path, forKey: Defaults.destinationKey)
+        }
+    }
+
+    static func loadDestination() -> URL? {
+        if let data = UserDefaults.standard.data(forKey: destinationBookmarkKey) {
+            var isStale = false
+            if let url = try? URL(
+                resolvingBookmarkData: data,
+                options: [.withSecurityScope, .withoutUI],
+                relativeTo: nil,
+                bookmarkDataIsStale: &isStale
+            ) {
+                if isStale {
+                    saveDestination(url)
+                }
+                return url
+            }
+        }
+        guard let path = UserDefaults.standard.string(forKey: Defaults.destinationKey) else { return nil }
+        let url = URL(fileURLWithPath: path, isDirectory: true)
+        var isDirectory: ObjCBool = false
+        guard FileManager.default.fileExists(atPath: url.path, isDirectory: &isDirectory), isDirectory.boolValue else {
+            return nil
+        }
+        return url
+    }
+
+    static func clearDestination() {
+        UserDefaults.standard.removeObject(forKey: destinationBookmarkKey)
+        UserDefaults.standard.removeObject(forKey: Defaults.destinationKey)
     }
 }
 
 enum ImageLoading {
     static func load(url: URL) throws -> CGImage {
-        let data = try Data(contentsOf: url)
-        if let image = NSImage(data: data) {
-            var rect = CGRect(origin: .zero, size: image.size)
-            if let cgImage = image.cgImage(forProposedRect: &rect, context: nil, hints: nil),
-               cgImage.width > 1, cgImage.height > 1 {
-                return cgImage
+        try SecurityScoped.access(url) { scoped in
+            let data = try Data(contentsOf: scoped)
+            if let image = NSImage(data: data) {
+                var rect = CGRect(origin: .zero, size: image.size)
+                if let cgImage = image.cgImage(forProposedRect: &rect, context: nil, hints: nil),
+                   cgImage.width > 1, cgImage.height > 1 {
+                    return cgImage
+                }
             }
+            guard let source = CGImageSourceCreateWithData(data as CFData, [kCGImageSourceShouldCache: true] as CFDictionary),
+                  let image = CGImageSourceCreateImageAtIndex(source, 0, nil) else {
+                throw LassoError.unreadable
+            }
+            return image
         }
-        guard let source = CGImageSourceCreateWithData(data as CFData, [kCGImageSourceShouldCache: true] as CFDictionary),
-              let image = CGImageSourceCreateImageAtIndex(source, 0, nil) else {
-            throw LassoError.unreadable
-        }
-        return image
     }
 }
 
@@ -221,11 +297,7 @@ enum SessionStore {
         return supportDirectory.appendingPathComponent("\(name).json")
     }
 
-    private static var supportDirectory: URL {
-        let root = FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask).first
-            ?? URL(fileURLWithPath: NSTemporaryDirectory())
-        return root.appendingPathComponent("LassoCropper/sessions", isDirectory: true)
-    }
+    private static var supportDirectory: URL { AppPaths.sessionsRoot }
 }
 
 enum Defaults {
@@ -250,7 +322,13 @@ enum Defaults {
     }
 
     static var lastDestination: URL? {
-        get { UserDefaults.standard.string(forKey: destinationKey).map(URL.init(fileURLWithPath:)) }
-        set { UserDefaults.standard.set(newValue?.path, forKey: destinationKey) }
+        get { BookmarkStore.loadDestination() }
+        set {
+            if let newValue {
+                BookmarkStore.saveDestination(newValue)
+            } else {
+                BookmarkStore.clearDestination()
+            }
+        }
     }
 }
