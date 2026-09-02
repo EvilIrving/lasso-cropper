@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>支持 — 套索导出</title>
+  <meta name="description" content="套索导出支持页：macOS 13+ 系统要求、导出与构建排查、GitHub Issues 反馈入口。">
+  <meta name="theme-color" content="#161410">
+  <link rel="canonical" href="./support.html">
+  <link rel="icon" href="assets/icon.png" type="image/png">
+  <link rel="stylesheet" href="styles.css">
+
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "WebPage",
+    "name": "套索导出支持",
+    "inLanguage": "zh-CN",
+    "description": "套索导出的下载、系统要求、排查步骤与 GitHub Issues 反馈方式。",
+    "about": {
+      "@type": "SoftwareApplication",
+      "name": "套索导出"
+    },
+    "isPartOf": {
+      "@type": "WebSite",
+      "name": "套索导出",
+      "url": "./"
+    },
+    "mainEntity": {
+      "@type": "SoftwareApplication",
+      "name": "套索导出",
+      "operatingSystem": "macOS 13 or later",
+      "softwareHelp": "https://github.com/EvilIrving/lasso-cropper/issues"
+    }
+  }
+  </script>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    "mainEntity": [
+      {
+        "@type": "Question",
+        "name": "如何获取套索导出？",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "可从 GitHub Releases 免费下载完整版，或克隆源码后运行 ./build.sh。Mac App Store 计划免费上架。"
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "套索导出的系统要求是什么？",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "需要 macOS 13 或更高。从源码构建需要 Swift 6 与 Xcode Command Line Tools。"
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "套索导出无法导出时怎么办？",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "重新选择导出目录并授权。沙盒下必须对目标文件夹有写权限；授权一次后会记住。"
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "如何反馈套索导出的问题？",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "请在 GitHub Issues 提交，并附上 macOS 版本、复现步骤与截图。"
+        }
+      }
+    ]
+  }
+  </script>
+</head>
+<body>
+  <div class="wrap">
+    <header>
+      <a class="brand" href="./">
+        <img src="assets/icon.png" width="36" height="36" alt="">
+        套索导出
+      </a>
+      <nav class="nav" aria-label="主导航">
+        <a href="./">首页</a>
+        <a href="privacy.html">隐私</a>
+        <a href="https://github.com/EvilIrving/lasso-cropper">GitHub</a>
+      </nav>
+    </header>
+
+    <h1 class="page-title">支持</h1>
+    <p class="meta">套索导出 · Lasso Cropper · macOS 13+</p>
+
+    <p class="note">
+      套索导出的支持渠道以本页说明与 GitHub Issues 为主：可在此查看下载方式、系统要求、常见排查步骤，并提交反馈。
+    </p>
+
+    <section class="prose">
+      <h2>下载</h2>
+      <p>套索导出可通过以下方式获取：</p>
+      <ul>
+        <li><a href="https://github.com/EvilIrving/lasso-cropper/releases">GitHub Releases</a>：完整版免费下载</li>
+        <li><a href="https://github.com/EvilIrving/lasso-cropper">源码仓库</a>：自行构建</li>
+        <li>Mac App Store：计划免费上架（通过后将在此补充商店链接）</li>
+      </ul>
+
+      <h2>系统要求</h2>
+      <p>套索导出需要 macOS 13 或更高；从源码构建还需要 Swift 6。</p>
+      <ul>
+        <li>macOS 13+</li>
+        <li>源码构建：Swift 6、Xcode Command Line Tools</li>
+      </ul>
+
+      <h2>排查</h2>
+      <ul>
+        <li><strong>打不开图片</strong>：检查 PNG / JPEG / HEIC / TIFF / WebP；改用打开面板</li>
+        <li><strong>导出失败</strong>：重新选择导出目录并授权</li>
+        <li><strong>找不到上次文件夹</strong>：再选一次导出目录</li>
+        <li><strong>构建失败</strong>：安装 CLT 后运行 <code>./build.sh</code></li>
+      </ul>
+    </section>
+
+    <section class="faq">
+      <h2>支持问答</h2>
+      <details>
+        <summary>如何获取？</summary>
+        <p>GitHub Releases 免费下载，或克隆后 <code>./build.sh</code>。App Store 计划免费上架。</p>
+      </details>
+      <details>
+        <summary>系统要求？</summary>
+        <p>macOS 13+。源码构建需要 Swift 6 与 Xcode Command Line Tools。</p>
+      </details>
+      <details>
+        <summary>无法导出？</summary>
+        <p>重新选择导出目录并授权；沙盒下必须对目标文件夹有写权限。</p>
+      </details>
+      <details>
+        <summary>如何反馈？</summary>
+        <p>到 GitHub Issues 提交，附上系统版本、复现步骤与截图。</p>
+      </details>
+    </section>
+
+    <section>
+      <h2>反馈</h2>
+      <div class="actions">
+        <a class="btn btn-gold" href="https://github.com/EvilIrving/lasso-cropper/issues/new">新建 Issue</a>
+        <a class="btn btn-ghost" href="https://github.com/EvilIrving/lasso-cropper/issues">全部 Issue</a>
+      </div>
+    </section>
+
+    <section class="prose">
+      <h2>隐私</h2>
+      <p>套索导出本地运行，不上传图片。详见 <a href="privacy.html">隐私政策</a>。</p>
+    </section>
+
+    <footer>
+      <span><a href="./">← 返回首页</a></span>
+      <span><a href="privacy.html">隐私</a> · <a href="https://github.com/EvilIrving/lasso-cropper">GitHub</a></span>
+    </footer>
+  </div>
+</body>
+</html>

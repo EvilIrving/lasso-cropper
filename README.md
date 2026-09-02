@@ -8,7 +8,7 @@ Native macOS tool. Draw a freehand lasso around anything on a sheet, then export
 
 Local-only, no account, no telemetry. Full build is free on GitHub; Mac App Store listing is planned as **free**.
 
-[Landing page](./website/index.html) · [Releases](https://github.com/EvilIrving/lasso-cropper/releases) · [中文说明](#中文)
+[Landing page](./website/index.html) · [Privacy](./website/privacy.html) · [Support](./website/support.html) · [Releases](https://github.com/EvilIrving/lasso-cropper/releases) · [中文说明](#中文)
 
 ## Why
 
