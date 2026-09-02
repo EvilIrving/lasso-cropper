@@ -9,17 +9,19 @@
     <key>CFBundleExecutable</key>
     <string>LassoCropper</string>
     <key>CFBundleIdentifier</key>
-    <string>com.betweenus.design.lassocropper</string>
+    <string>dev.onecat.lasso-export</string>
     <key>CFBundleInfoDictionaryVersion</key>
     <string>6.0</string>
     <key>CFBundleName</key>
     <string>套索导出</string>
     <key>CFBundlePackageType</key>
     <string>APPL</string>
+    <key>CFBundleIconFile</key>
+    <string>AppIcon</string>
     <key>CFBundleShortVersionString</key>
-    <string>1.1</string>
+    <string>1.2</string>
     <key>CFBundleVersion</key>
-    <string>2</string>
+    <string>3</string>
     <key>LSApplicationCategoryType</key>
     <string>public.app-category.graphics-design</string>
     <key>LSMinimumSystemVersion</key>

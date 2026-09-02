@@ -312,7 +312,7 @@ final class PreviewView: NSView {
             var column = 0
             var x: CGFloat = 0
             while x < bounds.width {
-                ((row + column).isMultiple(of: 2) ? NSColor(calibratedWhite: 0.78, alpha: 1) : NSColor(calibratedWhite: 0.66, alpha: 1)).setFill()
+                ((row + column).isMultiple(of: 2) ? NSColor(srgbRed: 0.22, green: 0.20, blue: 0.17, alpha: 1) : NSColor(srgbRed: 0.16, green: 0.15, blue: 0.13, alpha: 1)).setFill()
                 NSBezierPath.fill(CGRect(x: x, y: y, width: cell, height: cell))
                 x += cell
                 column += 1

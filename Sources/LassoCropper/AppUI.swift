@@ -124,6 +124,7 @@ final class LassoViewController: NSViewController, NSPathControlDelegate {
         marginValue.stringValue = "\(Int(marginPercent))%"
         marginValue.alignment = .right
         marginValue.font = .monospacedDigitSystemFont(ofSize: 12, weight: .regular)
+        marginValue.textColor = Theme.champagne
 
         exportButton.target = self
         exportButton.action = #selector(exportAll(_:))
@@ -159,6 +160,9 @@ final class LassoViewController: NSViewController, NSPathControlDelegate {
         changeFolderButton.title = "更改"
         changeFolderButton.target = self
         changeFolderButton.action = #selector(chooseFolder(_:))
+        changeFolderButton.isBordered = false
+        changeFolderButton.font = .systemFont(ofSize: 12, weight: .medium)
+        changeFolderButton.contentTintColor = Theme.gold
         statusLabel.textColor = Theme.muted
         statusLabel.font = .systemFont(ofSize: 12, weight: .medium)
         nextLabel.font = .monospacedDigitSystemFont(ofSize: 12, weight: .medium)
@@ -693,6 +697,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate {
     }
 
     func applicationDidFinishLaunching(_ notification: Notification) {
+        NSApp.appearance = NSAppearance(named: .darkAqua)
         installMenu()
         UserDefaults.standard.removeObject(forKey: "NSWindow Frame LassoCropper.Main")
         let argument = CommandLine.arguments.dropFirst().first.map { URL(fileURLWithPath: $0) }
