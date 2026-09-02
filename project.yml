@@ -1,6 +1,6 @@
 name: LassoCropper
 options:
-  bundleIdPrefix: com.betweenus.design
+  bundleIdPrefix: dev.onecat
   deploymentTarget:
     macOS: "13.0"
   createIntermediateGroups: true
