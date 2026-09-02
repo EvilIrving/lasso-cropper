@@ -4,7 +4,16 @@
   X-Frame-Options: DENY
 
 /*.html
-  Cache-Control: public, max-age=300
+  Cache-Control: public, max-age=60, must-revalidate
+
+/
+  Cache-Control: public, max-age=60, must-revalidate
+
+/privacy
+  Cache-Control: public, max-age=60, must-revalidate
+
+/support
+  Cache-Control: public, max-age=60, must-revalidate
 
 /assets/*
   Cache-Control: public, max-age=604800, immutable
