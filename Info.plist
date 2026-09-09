@@ -16,6 +16,8 @@
     <string>套索导出</string>
     <key>CFBundlePackageType</key>
     <string>APPL</string>
+    <key>CFBundleIconFile</key>
+    <string>AppIcon</string>
     <key>CFBundleIconName</key>
     <string>AppIcon</string>
     <key>CFBundleShortVersionString</key>
