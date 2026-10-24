@@ -14,11 +14,11 @@ enum LassoError: LocalizedError {
     var errorDescription: String? {
         switch self {
         case .noImage: return "请先打开图片"
-        case .noSelection: return "还没有圈完任何图形"
+        case .noSelection: return "尚未圈选任何内容，请先在画布中绘制选区"
         case .noDestination: return "请先选择导出文件夹"
-        case .invalidSelection: return "套索区域太小"
-        case .unreadable: return "无法打开这张图片"
-        case .exportFailed(let name): return "无法写入 \(name)"
+        case .invalidSelection: return "选区尺寸过小，请重新圈选"
+        case .unreadable: return "无法读取所选图片文件"
+        case .exportFailed(let name): return "生成导出图片失败：\(name)"
         }
     }
 }

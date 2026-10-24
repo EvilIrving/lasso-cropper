@@ -7,7 +7,7 @@ final class LassoViewController: NSViewController, NSPathControlDelegate {
     private let canvas = LassoCanvasView(frame: NSRect(x: 0, y: 0, width: 800, height: 600))
     private let scrollView = LassoScrollView()
     private let preview = PreviewView()
-    private let previewTitle = NSTextField(labelWithString: "未圈选")
+    private let previewTitle = NSTextField(labelWithString: "暂无选区")
     private let previewMeta = NSTextField(labelWithString: "")
     private let listStack = NSStackView()
     private let listScroll = NSScrollView()
@@ -99,7 +99,7 @@ final class LassoViewController: NSViewController, NSPathControlDelegate {
         toolbar.layer?.backgroundColor = Theme.lacquer.cgColor
 
         let openButton = labeledButton("打开", symbol: "folder", action: #selector(openImage(_:)))
-        let newButton = labeledButton("新窗口", symbol: "plus.rectangle.on.rectangle", action: #selector(newWindow(_:)))
+        let newButton = labeledButton("新建窗口", symbol: "plus.rectangle.on.rectangle", action: #selector(newWindow(_:)))
         styleGhost(undoButton, title: "撤销", symbol: "arrow.uturn.backward")
         undoButton.target = self
         undoButton.action = #selector(undoAction(_:))
@@ -118,11 +118,11 @@ final class LassoViewController: NSViewController, NSPathControlDelegate {
         canvasPopup.selectItem(withTitle: "\(canvasSize) × \(canvasSize)")
         canvasPopup.target = self
         canvasPopup.action = #selector(canvasSizeChanged(_:))
-        canvasPopup.toolTip = "每张导出 PNG 的正方形边长，图标会等比放进这块透明画布"
+        canvasPopup.toolTip = "导出正方形透明 PNG 的边长，圈选内容将等比缩放并居中放置"
 
         marginSlider.target = self
         marginSlider.action = #selector(marginChanged(_:))
-        marginSlider.toolTip = "透明画布四周留白"
+        marginSlider.toolTip = "导出画布四周的留白比例"
         marginValue.stringValue = "\(Int(marginPercent))%"
         marginValue.alignment = .right
         marginValue.font = .monospacedDigitSystemFont(ofSize: 12, weight: .regular)
@@ -154,7 +154,7 @@ final class LassoViewController: NSViewController, NSPathControlDelegate {
 
         destinationControl.pathStyle = .popUp
         destinationControl.delegate = self
-        destinationControl.placeholderString = "导出文件夹"
+        destinationControl.placeholderString = "选择导出文件夹"
         destinationControl.target = self
         destinationControl.action = #selector(destinationChanged(_:))
         destinationControl.setContentHuggingPriority(.defaultLow, for: .horizontal)
@@ -369,8 +369,8 @@ final class LassoViewController: NSViewController, NSPathControlDelegate {
         panel.canChooseFiles = false
         panel.canChooseDirectories = true
         panel.canCreateDirectories = true
-        panel.prompt = "用作导出文件夹"
-        panel.message = "选择后会记住此文件夹，下次无需重新授权"
+        panel.prompt = "选择文件夹"
+        panel.message = "选择后将记住此文件夹，后续导出无需重复选择"
         panel.directoryURL = destination
         guard panel.runModal() == .OK, let url = panel.url else { return }
         adoptDestination(url, persistBookmark: true)
@@ -513,7 +513,7 @@ final class LassoViewController: NSViewController, NSPathControlDelegate {
         }
         if !existing.isEmpty {
             let alert = NSAlert()
-            alert.messageText = "替换已有的 \(existing.count) 张图？"
+            alert.messageText = "目标文件夹中已有 \(existing.count) 个同名文件，是否替换？"
             alert.informativeText = existing.prefix(6).joined(separator: "\n") + (existing.count > 6 ? "\n…" : "")
             alert.addButton(withTitle: "替换")
             alert.addButton(withTitle: "取消")
@@ -534,7 +534,7 @@ final class LassoViewController: NSViewController, NSPathControlDelegate {
             }
             NSWorkspace.shared.open(scopedDestination)
         }
-        statusLabel.stringValue = "已导出 \(filled.count) 张"
+        statusLabel.stringValue = "已导出 \(filled.count) 张图片"
     }
 
     private func restore(_ session: LassoSession) {
@@ -674,7 +674,7 @@ final class LassoViewController: NSViewController, NSPathControlDelegate {
             let spacer = NSView()
             spacer.setContentHuggingPriority(.defaultLow, for: .horizontal)
             jobBar.addArrangedSubview(spacer)
-            nextLabel.stringValue = "已圈 \(filled)"
+            nextLabel.stringValue = "已圈选 \(filled) 项"
             jobBar.addArrangedSubview(nextLabel)
             destinationControl.setContentHuggingPriority(.defaultLow, for: .horizontal)
         }
@@ -694,7 +694,7 @@ final class LassoViewController: NSViewController, NSPathControlDelegate {
     private func refreshPreviewPane() {
         guard slots.indices.contains(selectedIndex) else {
             preview.image = nil
-            previewTitle.stringValue = "未圈选"
+            previewTitle.stringValue = "暂无选区"
             previewMeta.stringValue = canvasCaption(cut: nil)
             return
         }
@@ -707,7 +707,7 @@ final class LassoViewController: NSViewController, NSPathControlDelegate {
     private func canvasCaption(cut: LassoCut?) -> String {
         if let cut {
             let box = cut.bounds
-            return "圈选 \(Int(box.width))×\(Int(box.height))  →  画布 \(canvasSize)×\(canvasSize)"
+            return "选区 \(Int(box.width))×\(Int(box.height))  →  画布 \(canvasSize)×\(canvasSize)"
         }
         return "画布 \(canvasSize)×\(canvasSize) 透明 PNG"
     }
@@ -843,7 +843,7 @@ func installMenu() {
     let fileItem = NSMenuItem()
     let fileMenu = NSMenu(title: "文件")
     fileMenu.addItem(withTitle: "打开…", action: #selector(LassoViewController.openImage(_:)), keyEquivalent: "o")
-    fileMenu.addItem(withTitle: "新窗口", action: #selector(LassoViewController.newWindow(_:)), keyEquivalent: "n")
+    fileMenu.addItem(withTitle: "新建窗口", action: #selector(LassoViewController.newWindow(_:)), keyEquivalent: "n")
     fileMenu.addItem(NSMenuItem.separator())
     fileMenu.addItem(withTitle: "导出", action: #selector(LassoViewController.exportAll(_:)), keyEquivalent: "s")
     fileMenu.addItem(NSMenuItem.separator())
